@@ -11,7 +11,7 @@ interface IQuote {
 
 const app = initializeApp();
 const settings = { timestampsInSnapshots: true };
-const firestore = app.firestore()
+const firestore = app.firestore();
 firestore.settings(settings);
 
 const trimUsername = (user: string) => user.startsWith('@') ? user.substr(1) : user;
@@ -33,7 +33,6 @@ const parseQuoteCommand = (command: string, sender: string): IQuote => {
 
 const addQuote = (commandText: string, sender: string, domain: string) => {
   const parsedQuote = parseQuoteCommand(commandText, sender);
-  console.log(`PARSED QUOTE: `, parsedQuote);
   return firestore.collection('quotes')
     .doc(domain)
     .collection('users')
@@ -63,7 +62,7 @@ const formatQuote = (quoteToFormat: IQuote, addition: boolean = false) => {
       {
         color: '#104293',
         pretext: addition ? 'The following quote was added:' : undefined,
-        title: quoteToFormat.user,
+        title: (addition ? '' : 'A random quote from ') + quoteToFormat.user,
         text: quoteToFormat.quoteText,
         footer: quoteToFormat.context,
         ts: new Date(quoteToFormat.timestamp).getTime() / 1000,
