@@ -1,7 +1,7 @@
 import { IQuote, ISlackResponse } from "../types";
 import { RESPONSE_COLOR, errorResponse } from "../util";
 import { addQuoteToStore } from "../firebase";
-import * as functions from 'firebase-functions';
+import { Request, Response } from 'express';
 
 const parseAddQuoteCommand = (command: string, sender: string) => {
   const [user, quoteText, context = 'No context..'] = command.split(/[“"”]/g).map(s => s.trim()).filter(s => !!s);
@@ -38,7 +38,7 @@ const addQuoteCommand = (commandText: string, sender: string, domain: string) =>
     .then(quoteResult => formatResponse(user, quoteResult));
 };
 
-export const addQuote = functions.https.onRequest((request, response) => {
+export const addQuote = (request: Request, response: Response) => {
   const { command, text: paramsText, user_name: sender, team_domain: domain } = request.body;
   if (command === '/addquote') {
     console.log(`Adding new quote with params ${paramsText}`);
@@ -48,4 +48,4 @@ export const addQuote = functions.https.onRequest((request, response) => {
   } else {
     response.status(400).send(`Invalid command: ${command}`);
   }
-});
+};

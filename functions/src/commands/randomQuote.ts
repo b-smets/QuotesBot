@@ -1,7 +1,7 @@
 import { IQuote, ISlackResponse } from "../types";
 import { trimSlackUsername, RESPONSE_COLOR, errorResponse } from "../util";
 import { fetchRandomQuoteForUserFromStore } from "../firebase";
-import * as functions from 'firebase-functions';
+import { Request, Response } from 'express';
 
 const parseRandomQuoteCommand = (command: string) => {
   return trimSlackUsername(command.trim());
@@ -34,21 +34,20 @@ const formatResponse = (user: string, responseQuote: IQuote | null): ISlackRespo
   };
 };
 
-const quoteCommand = (commandText: string, domain: string) => {
+const randomQuoteCommand = (commandText: string, domain: string) => {
   const user = parseRandomQuoteCommand(commandText);
   return fetchRandomQuoteForUserFromStore(domain, user)
     .then(quoteResult => formatResponse(user, quoteResult));
 };
 
-export const quote = functions.https.onRequest((request, response) => {
-  console.log('request body: ', request.body);
+export const randomQuote = (request: Request, response: Response) => {
   const { command, text: paramsText, team_domain: domain } = request.body;
   if (command === '/quote') {
     console.log(`Fetching random quote with params ${paramsText}`);
-    quoteCommand(paramsText, domain)
+    randomQuoteCommand(paramsText, domain)
       .then(result => response.json(result))
       .catch(err => response.json(errorResponse(`Failed to retrieve quote for user ${paramsText}: ${err}`)));
   } else {
     response.status(400).send(`Invalid command: ${command}`);
   }
-});
+};
